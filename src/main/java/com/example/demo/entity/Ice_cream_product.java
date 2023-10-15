@@ -14,8 +14,12 @@ import lombok.Setter;
 @Table(name = "IceCreamProduct")
 public class Ice_cream_product {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private Long Id;
+
+    @Column(name = "skucode")
+    private Long skucode;
 
     @Column(name = "name")
     private String name;

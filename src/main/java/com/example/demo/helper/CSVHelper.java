@@ -12,7 +12,7 @@ import java.util.List;
 public class CSVHelper {
 
     public static  String TYPE = "text/csv";
-    static String[] HEADERs = {"Id", "Name", "Description", "Price", "IsOnSale"};
+    static String[] HEADERs = {"Skucode", "Name", "Description", "Price", "IsOnSale"};
 
     public static boolean hasCSVFormat(MultipartFile file){
         if(TYPE.equals(file.getContentType()) ||
@@ -29,13 +29,12 @@ public class CSVHelper {
             Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 
             for(CSVRecord csvRecord: csvRecords){
-                Ice_cream_product iceCreamProduct = new Ice_cream_product(
-                        Long.parseLong(csvRecord.get("Id")),
-                        csvRecord.get("Name"),
-                        csvRecord.get("Description"),
-                        Double.parseDouble(csvRecord.get("Price")),
-                        Boolean.parseBoolean(csvRecord.get("IsOnSale"))
-                );
+                Ice_cream_product iceCreamProduct = new Ice_cream_product();
+                iceCreamProduct.setSkucode(Long.parseLong(csvRecord.get("Skucode")));
+                iceCreamProduct.setName(csvRecord.get("Name"));
+                iceCreamProduct.setDescription(csvRecord.get("Description"));
+                iceCreamProduct.setPrice(Double.parseDouble(csvRecord.get("Price")));
+                iceCreamProduct.setOnSale(Boolean.parseBoolean(csvRecord.get("IsOnSale")));
                 iceCreamlist.add(iceCreamProduct);
             }
             return iceCreamlist;
