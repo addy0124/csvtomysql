@@ -31,10 +31,6 @@ public class Ice_cream_product {
     private double price;
 
     @Column(name = "isOnSale")
-    private boolean isOnSale;
-
-    public boolean isOnSale (){
-        return isOnSale;
-    }
+    private String isOnSale;
 
 }
