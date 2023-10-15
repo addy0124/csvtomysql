@@ -4,10 +4,9 @@ import com.example.demo.entity.Ice_cream_product;
 import org.apache.commons.csv.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.text.Style;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class CSVHelper {
 
@@ -22,27 +21,57 @@ public class CSVHelper {
         return false;
     }
 
-    public static List<Ice_cream_product> csvToMysql(InputStream is){
+    public static List<Ice_cream_product> csvToMysql(InputStream is) {
         try (BufferedReader fileReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-             CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());){
-            List<Ice_cream_product> iceCreamlist = new ArrayList<>();
+             CSVParser csvParser = new CSVParser(fileReader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());) {
+            Map<Long, Ice_cream_product> iceCreamMap = new HashMap<>();
             Iterable<CSVRecord> csvRecords = csvParser.getRecords();
 
-            for(CSVRecord csvRecord: csvRecords){
-                Ice_cream_product iceCreamProduct = new Ice_cream_product();
-                iceCreamProduct.setSkucode(Long.parseLong(csvRecord.get("Skucode")));
-                iceCreamProduct.setName(csvRecord.get("Name"));
-                iceCreamProduct.setDescription(csvRecord.get("Description"));
-                iceCreamProduct.setPrice(Double.parseDouble(csvRecord.get("Price")));
-                iceCreamProduct.setOnSale(Boolean.parseBoolean(csvRecord.get("IsOnSale")));
-                iceCreamlist.add(iceCreamProduct);
+            for (CSVRecord csvRecord : csvRecords) {
+                String skucodeStr = csvRecord.get("Skucode").trim();
+
+                if (!skucodeStr.matches("\\d+") || skucodeStr.length() > 3) {
+                    // Invalid Skucode, skip this record
+                    throw new IllegalArgumentException("Invalid Skucode: " + skucodeStr);
+                }
+
+                Long skucode = Long.parseLong(skucodeStr);
+                Ice_cream_product iceCreamProduct = iceCreamMap.get(skucode);
+
+                if (iceCreamProduct == null) {
+                    iceCreamProduct = new Ice_cream_product();
+                    iceCreamProduct.setSkucode(skucode);
+                    iceCreamMap.put(skucode, iceCreamProduct);
+                }
+
+                String name = csvRecord.get("Name").trim();
+                if (!name.isEmpty()) {
+                    iceCreamProduct.setName(name);
+                }
+
+                String description = csvRecord.get("Description").trim();
+                if (!description.isEmpty()) {
+                    iceCreamProduct.setDescription(description);
+                }
+
+                String priceStr = csvRecord.get("Price").trim();
+                if (!priceStr.isEmpty()) {
+                    double price = Double.parseDouble(priceStr);
+                    iceCreamProduct.setPrice(price);
+                }
+
+                String isOnSaleStr = csvRecord.get("IsOnSale").trim();
+                if (!isOnSaleStr.isEmpty()) {
+                    boolean isOnSale = Boolean.parseBoolean(isOnSaleStr);
+                    iceCreamProduct.setOnSale(isOnSale);
+                }
             }
-            return iceCreamlist;
+
+            return new ArrayList<>(iceCreamMap.values());
         } catch (IOException e) {
-            throw new RuntimeException("fail to parse CSV file: " + e.getMessage());
+            throw new RuntimeException("Failed to parse CSV file: " + e.getMessage());
         }
     }
-
     public static ByteArrayInputStream mysqltoCSV(List<Ice_cream_product> developerTutorialList) {
         final CSVFormat format = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.MINIMAL);
 
